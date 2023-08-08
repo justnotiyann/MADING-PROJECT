@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Support\Facades\Route;
 
@@ -14,13 +15,35 @@ Route::get('/', function () {
 });
 
 
+Route::get('/dashboard', function () {
+    echo 'Berhasil login dengan username ' . auth()->user()->name;
+});
+
+
 // Tampilan Login
 Route::get('/login', function () {
     return view('login');
 });
 
 // untuk login
-Route::post('/login', function (Request $request) { });
+Route::post('/login', function (Request $request) {
+
+    $credentials = $request->validate([
+        'email' => 'required',
+        'password' => 'required',
+    ]);
+
+    if (Auth::attempt($credentials)) {
+        $request->session()->regenerate();
+
+        // JIka berhasil login maka diarahkan ke routes dashboard
+        return redirect()->intended('dashboard');
+    }
+
+    // Jika gagal maka kembali ke routes login dengan berikan flash session dengan nama 'fail' dan pesan 'something wrong'
+    return back()->with('fail', 'Something wrong');
+
+});
 
 
 // Tampilan Register
